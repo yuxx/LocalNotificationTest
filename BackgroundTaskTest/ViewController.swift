@@ -78,7 +78,7 @@ final class ViewController: UIViewController {
         phoneNumberField.layer.borderColor = UIColor.black.cgColor
         phoneNumberField.layer.borderWidth = 1
 
-        startCallingWithLocalPushButton.setTitle("通話開始(LocalPush版)", for: .normal)
+        startCallingWithLocalPushButton.setTitle("通話開始", for: .normal)
         startCallingWithLocalPushButton.setTitleColor(.white, for: .normal)
         startCallingWithLocalPushButton.backgroundColor = .red
         startCallingWithLocalPushButton.layer.cornerRadius = 10
