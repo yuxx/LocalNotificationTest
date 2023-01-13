@@ -19,18 +19,18 @@ final class ViewController: UIViewController {
     }
 
     private let centerArea = UIView()
-    private let setNotificationButton = UIButton()
     private let notificationSecToolBar = UIToolbar()
     private let notificationSecField = UITextField()
+    private let setNotificationButton = UIButton()
     private let notificationSecLabel = UILabel()
     private let phoneNumberToolBar = UIToolbar()
     private let phoneNumberField = UITextField()
     private let startCallingWithLocalPushButton = UIButton()
     private func setupSubviews() {
         view.addSubview(centerArea)
-        centerArea.addSubview(setNotificationButton)
         centerArea.addSubview(notificationSecField)
         centerArea.addSubview(notificationSecLabel)
+        centerArea.addSubview(setNotificationButton)
         centerArea.addSubview(phoneNumberField)
         centerArea.addSubview(startCallingWithLocalPushButton)
 
@@ -100,11 +100,7 @@ final class ViewController: UIViewController {
             // NOTE: width がサブビューと制約紐付けが無いためこの設定がないと0px扱いになってボタンも反応しなくなる
             centerArea.widthAnchor.constraint(equalTo: view.widthAnchor),
 
-            setNotificationButton.topAnchor.constraint(equalTo: centerArea.topAnchor),
-            setNotificationButton.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
-            setNotificationButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
-
-            notificationSecField.topAnchor.constraint(equalTo: setNotificationButton.bottomAnchor, constant: 10),
+            notificationSecField.topAnchor.constraint(equalTo: centerArea.topAnchor),
             notificationSecField.widthAnchor.constraint(equalToConstant: 100),
             notificationSecField.heightAnchor.constraint(equalToConstant: 30),
             notificationSecField.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
@@ -112,7 +108,11 @@ final class ViewController: UIViewController {
             notificationSecLabel.leftAnchor.constraint(equalTo: notificationSecField.rightAnchor, constant: 5),
             notificationSecLabel.centerYAnchor.constraint(equalTo: notificationSecField.centerYAnchor),
 
-            phoneNumberField.topAnchor.constraint(equalTo: notificationSecField.bottomAnchor, constant: 10),
+            setNotificationButton.topAnchor.constraint(equalTo: notificationSecField.bottomAnchor, constant: 10),
+            setNotificationButton.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
+            setNotificationButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+
+            phoneNumberField.topAnchor.constraint(equalTo: setNotificationButton.bottomAnchor, constant: 10),
             phoneNumberField.widthAnchor.constraint(equalToConstant: 200),
             phoneNumberField.heightAnchor.constraint(equalToConstant: 30),
             phoneNumberField.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
@@ -127,13 +127,13 @@ final class ViewController: UIViewController {
     }
 
     private func setupButtonActions() {
-        setNotificationButton.addTarget(NotificationManager.instance, action: #selector(NotificationManager.setLocalNotificationTimer), for: .touchUpInside)
-
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
 
         let cancelEditingNotificationSec = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closeNotificationSecInput))
         let finishEditingNotificationSec = UIBarButtonItem(title: "完了", style: .done, target: self, action: #selector(finishEditingNotificationSec))
         notificationSecToolBar.items = [cancelEditingNotificationSec, spacer, finishEditingNotificationSec]
+
+        setNotificationButton.addTarget(NotificationManager.instance, action: #selector(NotificationManager.setLocalNotificationTimer), for: .touchUpInside)
 
         let cancelEditingPhoneNumber = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closePhoneNumberInput))
         let finishEditingPhoneNumber = UIBarButtonItem(title: "完了", style: .done, target: self, action: #selector(finishEditingPhoneNumber))
