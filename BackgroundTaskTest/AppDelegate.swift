@@ -37,3 +37,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+extension AppDelegate {
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
+    }
+}

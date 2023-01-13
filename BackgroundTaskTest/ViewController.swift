@@ -25,14 +25,14 @@ final class ViewController: UIViewController {
     private let notificationSecLabel = UILabel()
     private let phoneNumberToolBar = UIToolbar()
     private let phoneNumberField = UITextField()
-    private let startCallingButton = UIButton()
+    private let startCallingWithLocalPushButton = UIButton()
     private func setupSubviews() {
         view.addSubview(centerArea)
         centerArea.addSubview(setNotificationButton)
         centerArea.addSubview(notificationSecField)
         centerArea.addSubview(notificationSecLabel)
         centerArea.addSubview(phoneNumberField)
-        centerArea.addSubview(startCallingButton)
+        centerArea.addSubview(startCallingWithLocalPushButton)
 
         setupAppearance()
         setupButtonActions()
@@ -42,7 +42,7 @@ final class ViewController: UIViewController {
     private func setupAppearance() {
         view.backgroundColor = .white
 
-        setNotificationButton.setTitle("通知をセットする", for: .normal)
+        setNotificationButton.setTitle("通知だけセットする", for: .normal)
         setNotificationButton.setTitleColor(.black, for: .normal)
         setNotificationButton.backgroundColor = .green
         setNotificationButton.layer.cornerRadius = 10
@@ -78,12 +78,12 @@ final class ViewController: UIViewController {
         phoneNumberField.layer.borderColor = UIColor.black.cgColor
         phoneNumberField.layer.borderWidth = 1
 
-        startCallingButton.setTitle("通知をセットしながら通話開始", for: .normal)
-        startCallingButton.setTitleColor(.white, for: .normal)
-        startCallingButton.backgroundColor = .red
-        startCallingButton.layer.cornerRadius = 10
-        startCallingButton.clipsToBounds = true
-        startCallingButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        startCallingWithLocalPushButton.setTitle("通話開始(LocalPush版)", for: .normal)
+        startCallingWithLocalPushButton.setTitleColor(.white, for: .normal)
+        startCallingWithLocalPushButton.backgroundColor = .red
+        startCallingWithLocalPushButton.layer.cornerRadius = 10
+        startCallingWithLocalPushButton.clipsToBounds = true
+        startCallingWithLocalPushButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
     }
 
     private func setupConstraints() {
@@ -92,7 +92,7 @@ final class ViewController: UIViewController {
         notificationSecField.translatesAutoresizingMaskIntoConstraints = false
         notificationSecLabel.translatesAutoresizingMaskIntoConstraints = false
         phoneNumberField.translatesAutoresizingMaskIntoConstraints = false
-        startCallingButton.translatesAutoresizingMaskIntoConstraints = false
+        startCallingWithLocalPushButton.translatesAutoresizingMaskIntoConstraints = false
 
         let constraints = [
             centerArea.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -117,73 +117,56 @@ final class ViewController: UIViewController {
             phoneNumberField.heightAnchor.constraint(equalToConstant: 30),
             phoneNumberField.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
 
-            startCallingButton.topAnchor.constraint(equalTo: phoneNumberField.bottomAnchor, constant: 10),
-            startCallingButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 280),
-            startCallingButton.heightAnchor.constraint(equalToConstant: 40),
-            startCallingButton.bottomAnchor.constraint(equalTo: centerArea.bottomAnchor),
-            startCallingButton.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
+            startCallingWithLocalPushButton.topAnchor.constraint(equalTo: phoneNumberField.bottomAnchor, constant: 10),
+            startCallingWithLocalPushButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 280),
+            startCallingWithLocalPushButton.heightAnchor.constraint(equalToConstant: 40),
+            startCallingWithLocalPushButton.centerXAnchor.constraint(equalTo: centerArea.centerXAnchor),
+            startCallingWithLocalPushButton.bottomAnchor.constraint(equalTo: centerArea.bottomAnchor),
         ]
         NSLayoutConstraint.activate(constraints)
     }
 
     private func setupButtonActions() {
-        setNotificationButton.addTarget(self, action: #selector(setLocalNotificationTimer), for: .touchUpInside)
+        setNotificationButton.addTarget(NotificationManager.instance, action: #selector(NotificationManager.setLocalNotificationTimer), for: .touchUpInside)
 
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
 
-        let cancelToEditNotificationSec = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closeNotificationSecInput))
-        let doneToEditNotificationSec = UIBarButtonItem(title: "完了", style: .done, target: self, action: #selector(notificationSecDone))
-        notificationSecToolBar.items = [cancelToEditNotificationSec, spacer, doneToEditNotificationSec] as [UIBarButtonItem]?
-        let cancelToEditPhoneNumber = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closePhoneNumberInput))
-        let doneToEditPhoneNumber = UIBarButtonItem(title: "電話を掛ける", style: .done, target: self, action: #selector(startCalling))
-        phoneNumberToolBar.items = [cancelToEditPhoneNumber, spacer, doneToEditPhoneNumber] as [UIBarButtonItem]?
-        startCallingButton.addTarget(self, action: #selector(startCalling), for: .touchUpInside)
-    }
+        let cancelEditingNotificationSec = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closeNotificationSecInput))
+        let finishEditingNotificationSec = UIBarButtonItem(title: "完了", style: .done, target: self, action: #selector(finishEditingNotificationSec))
+        notificationSecToolBar.items = [cancelEditingNotificationSec, spacer, finishEditingNotificationSec]
 
-    static let defaultIntervalSec = 60
-    @objc private func setLocalNotificationTimer() {
-        let content = UNMutableNotificationContent()
-        content.title = "たいとる"
-        content.body = "ボデー"
-        content.sound = UNNotificationSound.default
-        let time: Int = {
-            guard let notificationSecString = UserDefaultsManager.instance.notificationSec
-                , let notificationSec = Int(notificationSecString)
-            else {
-                return Self.defaultIntervalSec
-            }
-            return notificationSec
-        }()
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(time), repeats: false)
-        let request = UNNotificationRequest(identifier: "\(String(describing: Self.self))-notification", content: content, trigger: trigger)
-        let nc = UNUserNotificationCenter.current()
-        nc.add(request)
+        let cancelEditingPhoneNumber = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(closePhoneNumberInput))
+        let finishEditingPhoneNumber = UIBarButtonItem(title: "完了", style: .done, target: self, action: #selector(finishEditingPhoneNumber))
+        phoneNumberToolBar.items = [cancelEditingPhoneNumber, spacer, finishEditingPhoneNumber]
+
+        startCallingWithLocalPushButton.addTarget(self, action: #selector(startCallingWithLocalPush), for: .touchUpInside)
     }
 
     @objc private func closeNotificationSecInput() {
-        notificationSecField.text = UserDefaultsManager.instance.notificationSec ?? String(Self.defaultIntervalSec)
+        notificationSecField.text = UserDefaultsManager.instance.notificationSec ?? String(NotificationManager.defaultIntervalSec)
         notificationSecField.resignFirstResponder()
     }
 
     @objc private func closePhoneNumberInput() {
+        phoneNumberField.text = UserDefaultsManager.instance.phoneNumber
         phoneNumberField.resignFirstResponder()
     }
 
-    @objc private func notificationSecDone() {
-        guard let notificationSecText = notificationSecField.text else {
-            NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
-            return
-        }
-        UserDefaultsManager.instance.notificationSec = notificationSecText
+    @objc private func finishEditingNotificationSec() {
+        UserDefaultsManager.instance.notificationSec = notificationSecField.text
         closeNotificationSecInput()
     }
 
-    @objc private func startCalling() {
-        guard let phoneNumberText = phoneNumberField.text else {
+    @objc private func finishEditingPhoneNumber() {
+        UserDefaultsManager.instance.phoneNumber = phoneNumberField.text
+        closePhoneNumberInput()
+    }
+
+    @objc private func startCallingWithLocalPush() {
+        guard let phoneNumberText = UserDefaultsManager.instance.phoneNumber else {
             NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
             return
         }
-        UserDefaultsManager.instance.phoneNumber = phoneNumberText
         guard let phoneURL = URL(string: "tel://" + phoneNumberText) else {
             NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
             return
@@ -193,8 +176,9 @@ final class ViewController: UIViewController {
                 NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
                 return
             }
-            self.setLocalNotificationTimer()
-            self.closePhoneNumberInput()
+            NotificationManager.instance.enqueueLocalNotification()
+            CallManager.instance.startObserve()
+            NSLog("\(String(describing: Self.self))::\(#function)@\(#line)")
         }
     }
 }
